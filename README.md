@@ -113,8 +113,9 @@ cd wezterm-hammerspoon
 ./install.sh
 ```
 
-`install.sh` symlinks both files into place, backing up anything already there.
+`install.sh` symlinks both configs into place, backing up anything already
+there, and copies [MesloLGS Nerd Font] from `fonts/` into `~/Library/Fonts/`.
 Then grant Hammerspoon Accessibility permission in System Settings → Privacy &
-Security, and install [MesloLGS Nerd Font].
+Security.
 
 [MesloLGS Nerd Font]: https://github.com/ryanoasis/nerd-fonts/releases/latest

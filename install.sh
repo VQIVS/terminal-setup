@@ -18,6 +18,15 @@ link() {
 link "$repo/wezterm/wezterm.lua" "$HOME/.config/wezterm/wezterm.lua"
 link "$repo/hammerspoon/init.lua" "$HOME/.hammerspoon/init.lua"
 
+# Fonts are copied rather than symlinked -- macOS font registration does not
+# reliably follow links out of ~/Library/Fonts.
+fonts="$HOME/Library/Fonts"
+mkdir -p "$fonts"
+for font in "$repo"/fonts/*.ttf; do
+   cp -f "$font" "$fonts/"
+   echo "installed font $(basename "$font")"
+done
+
 mkdir -p "$HOME/.config/wezterm/backdrops"
 echo
 echo "Drop wallpapers into ~/.config/wezterm/backdrops/ and list them in"
