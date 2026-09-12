@@ -49,3 +49,89 @@ cursor-style-blink = true
 #
 # Paths in `config-file` are relative to this file.
 config-file = ?backdrop.conf
+
+# ─── shortcut keys ───────────────────────────────────────────────────────────
+# Splits / tabs / panes, WezTerm-style but with macOS-native cmd bindings.
+keybind = cmd+d=new_split:right
+keybind = cmd+shift+d=new_split:down
+keybind = cmd+w=close_surface
+keybind = cmd+shift+w=close_tab
+keybind = cmd+t=new_tab
+keybind = cmd+enter=toggle_split_zoom
+keybind = cmd+shift+e=equalize_splits
+
+# Move focus between splits (cmd + vim keys, and cmd+alt+arrows).
+keybind = cmd+h=goto_split:left
+keybind = cmd+j=goto_split:down
+keybind = cmd+k=goto_split:up
+keybind = cmd+l=goto_split:right
+keybind = cmd+alt+left=goto_split:left
+keybind = cmd+alt+down=goto_split:down
+keybind = cmd+alt+up=goto_split:up
+keybind = cmd+alt+right=goto_split:right
+
+# Resize the focused split.
+keybind = cmd+ctrl+h=resize_split:left,40
+keybind = cmd+ctrl+j=resize_split:down,40
+keybind = cmd+ctrl+k=resize_split:up,40
+keybind = cmd+ctrl+l=resize_split:right,40
+
+# Tabs by number, plus prev/next.
+keybind = cmd+shift+left=previous_tab
+keybind = cmd+shift+right=next_tab
+
+# Font size, config reload, command palette, scrollback dump.
+keybind = cmd+equal=increase_font_size:1
+keybind = cmd+minus=decrease_font_size:1
+keybind = cmd+zero=reset_font_size
+keybind = cmd+shift+comma=reload_config
+keybind = cmd+shift+p=toggle_command_palette
+keybind = cmd+shift+k=clear_screen
+keybind = cmd+f=start_search
+# Dump the whole scrollback to a file and open it (in $EDITOR -> nvim).
+keybind = cmd+shift+s=write_scrollback_file:open
+
+# ─── vim mode (scrollback navigation) ────────────────────────────────────────
+# Ghostty has no built-in vi mode, so this builds one out of a *key table*
+# (Ghostty >= 1.3): ctrl+shift+space enters "vimmode", where keys are motions
+# instead of being sent to the shell. Esc (or i / q) leaves it.
+#
+# While in vimmode the default bindings still resolve, so cmd+... shortcuts
+# above keep working -- only the plain keys below are captured.
+keybind = ctrl+shift+space=activate_key_table:vimmode
+
+# clear the table first, so a reload doesn't stack duplicate bindings
+keybind = vimmode/
+
+# leave
+keybind = vimmode/escape=deactivate_key_table
+keybind = vimmode/i=deactivate_key_table
+keybind = vimmode/q=deactivate_key_table
+keybind = vimmode/ctrl+c=deactivate_key_table
+
+# motions
+keybind = vimmode/j=scroll_page_lines:1
+keybind = vimmode/k=scroll_page_lines:-1
+keybind = vimmode/d=scroll_page_fractional:0.5
+keybind = vimmode/u=scroll_page_fractional:-0.5
+keybind = vimmode/ctrl+d=scroll_page_fractional:0.5
+keybind = vimmode/ctrl+u=scroll_page_fractional:-0.5
+keybind = vimmode/ctrl+f=scroll_page_down
+keybind = vimmode/ctrl+b=scroll_page_up
+keybind = vimmode/g>g=scroll_to_top
+keybind = vimmode/shift+g=scroll_to_bottom
+
+# jump between shell prompts (needs shell integration, which Ghostty
+# injects into zsh automatically)
+keybind = vimmode/bracket_left=jump_to_prompt:-1
+keybind = vimmode/bracket_right=jump_to_prompt:1
+keybind = vimmode/shift+k=jump_to_prompt:-1
+keybind = vimmode/shift+j=jump_to_prompt:1
+
+# search / yank
+keybind = vimmode/slash=start_search
+keybind = vimmode/n=navigate_search:next
+keybind = vimmode/shift+n=navigate_search:previous
+keybind = vimmode/y=copy_to_clipboard
+keybind = vimmode/v=select_all
+keybind = vimmode/p=paste_from_clipboard

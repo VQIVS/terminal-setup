@@ -2,8 +2,10 @@
 
 My macOS terminal setup: a [WezTerm](https://wezterm.org) config, the
 [Hammerspoon](https://www.hammerspoon.org) script that gives it a global
-show/hide hotkey, and a [Ghostty](https://ghostty.org) config for the one
-thing that pair provably cannot do (see [Ghostty](#ghostty)).
+show/hide hotkey, a [Ghostty](https://ghostty.org) config for the one thing
+that pair provably cannot do (see [Ghostty](#ghostty)), and the shell and
+editors that live inside them — zsh in vi mode, vim and neovim themed to
+match.
 
 The parts are separate programs but they solve one problem together — a
 terminal that is always one keypress away, always on the display I'm looking
@@ -14,6 +16,13 @@ wezterm/wezterm.lua     -> ~/.config/wezterm/wezterm.lua
 hammerspoon/init.lua    -> ~/.hammerspoon/init.lua
 ghostty/config          -> ~/.config/ghostty/config
 ghostty/backdrop.sh     -> ~/.config/ghostty/backdrop.sh
+zsh/zshrc               -> ~/.zshrc
+zsh/p10k.zsh            -> ~/.p10k.zsh
+zsh/vi-mode.zsh            (sourced out of the repo by zshrc)
+vim/vimrc               -> ~/.vimrc
+vim/colors/*.vim        -> ~/.vim/colors/
+nvim/init.lua           -> ~/.config/nvim/init.lua
+nvim/lazy-lock.json     -> ~/.config/nvim/lazy-lock.json
 ```
 
 ## WezTerm
@@ -164,7 +173,119 @@ foreground. `background-image-fit = cover` rather than `contain`, because a
 letterboxed image would show bare background colour down the sides of a
 full-width drop-down.
 
+**Keys.** Mirrors the WezTerm bindings where Ghostty has an equivalent.
+
+| Binding | Action |
+| --- | --- |
+| `CMD+D` / `CMD+SHIFT+D` | Split right / down |
+| `CMD+H/J/K/L`, `CMD+ALT+arrows` | Move between splits |
+| `CMD+CTRL+H/J/K/L` | Resize the focused split |
+| `CMD+Enter` | Zoom the focused split |
+| `CMD+SHIFT+E` | Equalize splits |
+| `CMD+T` / `CMD+W` / `CMD+SHIFT+W` | New tab / close surface / close tab |
+| `CMD+SHIFT+left/right` | Previous / next tab |
+| `CMD+=` `CMD+-` `CMD+0` | Font size up / down / reset |
+| `CMD+F` | Search |
+| `CMD+SHIFT+K` | Clear screen (`CMD+K` is a split move here) |
+| `CMD+SHIFT+P` | Command palette |
+| `CMD+SHIFT+,` | Reload config |
+| `CMD+SHIFT+S` | Dump the scrollback to a file and open it in `$EDITOR` |
+
+**Vim mode.** Ghostty has no built-in vi mode for the scrollback, but 1.3 added
+[key tables], which is enough to build one. `Ctrl+Shift+Space` activates the
+`vimmode` table, where plain keys are motions instead of input to the shell;
+`Esc`, `i`, `q` or `Ctrl+C` leave it. Lookup proceeds from the innermost table
+outward, so the `CMD+...` bindings above still work while it's active — only
+the bare letters are captured.
+
+| In `vimmode` | Does |
+| --- | --- |
+| `j` / `k` | Scroll a line |
+| `d` / `u`, `Ctrl+D` / `Ctrl+U` | Half page |
+| `Ctrl+F` / `Ctrl+B` | Full page |
+| `gg` / `G` | Top / bottom |
+| `[` `]`, `K` `J` | Jump to previous / next shell prompt |
+| `/`, `n` / `N` | Search, next / previous match |
+| `y` / `p` / `v` | Copy selection / paste / select all |
+
+Prompt jumping needs shell integration, which Ghostty injects into zsh on its
+own — nothing to add to `zshrc`.
+
+`keybind = vimmode/` (a table name with no binding) clears the table first, so
+reloading the config doesn't stack duplicate bindings.
+
+[key tables]: https://ghostty.org/docs/config/keybind
 [gt-3719]: https://github.com/ghostty-org/ghostty/discussions/3719
+
+## Shell
+
+`zsh/zshrc` is the whole thing — oh-my-zsh with the `git` and `fzf` plugins,
+powerlevel10k as the theme, `$EDITOR` pointed at neovim (with `vi`/`vim`/`v`
+aliased to it, and `nvim +Man!` as the pager for man pages).
+
+Two rules keep it portable: anything machine-specific is guarded
+(`command -v go >/dev/null && export PATH=...`, so a box without Go still
+opens a clean shell), and anything genuinely local — work paths, tokens,
+one-off aliases — goes in **`~/.zshrc.local`**, which is sourced last and is
+not in this repo. `$DOTFILES` points at the checkout, so `dots` cds here and
+`dots-install` re-runs the installer.
+
+**Vi mode.** `zsh/vi-mode.zsh` makes the command line itself modal: `Esc`
+drops to normal mode and the usual motions and operators work on the prompt —
+`ciw`, `di(`, `cs"'`, `yy`, `p`, `0`, `$`, `w`, `b`. Beyond `bindkey -v` it
+adds the parts zsh leaves out:
+
+| Key | Does |
+| --- | --- |
+| `Esc` | Leave insert mode (`KEYTIMEOUT=1`, so 10ms not 400ms) |
+| cursor shape | Block in normal mode, bar in insert — via DECSCUSR |
+| `ci"` `da(` `yi{` | Text objects (`select-bracketed` / `select-quoted`) |
+| `cs"'` `ds(` `ys` | Surround (`cs` change, `ds` delete, `ys` add) |
+| `k` / `j` in normal | History search on what you've already typed |
+| `vv` in normal | Open the current line in `$EDITOR` |
+| `y` in normal | Yank, and also copy to the macOS clipboard |
+| `Ctrl+A` `Ctrl+E` `Ctrl+W` `Ctrl+R` | Kept from emacs mode, in insert mode |
+
+The Esc delay is the whole reason `KEYTIMEOUT=1` is there — at the default
+`40` (400ms) vi mode feels broken rather than fast. The tradeoff is that
+multi-byte escape sequences typed by hand can be split; arrow keys are bound
+explicitly in `viins` so they keep working regardless.
+
+## Editors
+
+Both editors use **Catppuccin Mocha with a transparent background**, which is
+the point: Ghostty is running at 70% opacity over blurred application pixels,
+and an editor that paints its own opaque background would punch a rectangle
+through that effect.
+
+**vim** (`vim/vimrc`). All four Catppuccin flavours are vendored into
+`vim/colors/` — no plugin manager for vim, one `colorscheme` line to swap
+(`catppuccin_mocha` | `macchiato` | `frappe` | `latte`; latte also wants
+`set background=light`). `t_8f`/`t_8b` are set explicitly before
+`termguicolors`, because `$TERM=xterm-ghostty` alone doesn't always get vim to
+emit 24-bit colour. Then relative numbers, persistent undo in `~/.vim/undo`,
+system clipboard, 4-space soft tabs.
+
+**neovim** (`nvim/init.lua`). Single-file config, [lazy.nvim] bootstrapped by
+the file itself, so a fresh machine needs no manual plugin step:
+
+| Plugin | For |
+| --- | --- |
+| `catppuccin/nvim` | theme, `transparent_background = true` |
+| `nvim-treesitter` | syntax (`main` branch API) |
+| `telescope.nvim` | `<leader>f` files, `<leader>g` grep, `<leader>b` buffers |
+| `neo-tree.nvim` | `<leader>e` file tree |
+| `lualine` | statusline, catppuccin theme |
+| `gitsigns` `autopairs` `Comment` `which-key` | the usual |
+
+Leader is `Space`. Treesitter's `main` branch dropped `require("nvim-treesitter.configs")`,
+so parsers are installed with `require("nvim-treesitter").install()` and
+highlighting is switched on per buffer from a `FileType` autocmd — and it needs
+the **`tree-sitter` CLI** on `PATH` to compile them (`brew install
+tree-sitter-cli`, which `install.sh` does). `nvim/lazy-lock.json` is committed,
+so every machine resolves the same plugin commits.
+
+[lazy.nvim]: https://github.com/folke/lazy.nvim
 
 ## Install
 
@@ -174,16 +295,29 @@ cd wezterm-hammerspoon
 ./install.sh
 ```
 
-`install.sh` symlinks all the configs into place, backing up anything already
-there, copies [MesloLGS Nerd Font] from `fonts/` into `~/Library/Fonts/`, and
-seeds a Ghostty backdrop. Then grant Accessibility permission in System
-Settings → Privacy & Security to **Hammerspoon** (for `Ctrl+Escape`) and to
-**Ghostty** (for `Ctrl+T`).
+`install.sh` brings a fresh macOS machine all the way up, and is idempotent —
+re-run it any time. It:
 
-WezTerm and Ghostty are not installed by the script:
+1. installs Homebrew if missing, then `git`, `neovim`, `tree-sitter-cli`,
+   `fzf`, `ripgrep`, and the `ghostty`, `wezterm`, `hammerspoon` casks;
+2. installs oh-my-zsh (with `KEEP_ZSHRC=yes`, so it won't clobber ours) and
+   powerlevel10k;
+3. symlinks every config in the map above, moving anything already there to
+   `*.bak`;
+4. bootstraps neovim — `Lazy! sync` for plugins, then compiles the treesitter
+   parsers;
+5. copies [MesloLGS Nerd Font] from `fonts/` into `~/Library/Fonts/` (copied,
+   not linked: macOS font registration doesn't reliably follow symlinks out of
+   that folder), and seeds a Ghostty backdrop.
 
 ```sh
-brew install --cask wezterm ghostty
+./install.sh --no-deps    # configs only, no brew / oh-my-zsh installs
 ```
+
+Three things it can't do for you: grant Accessibility permission in System
+Settings → Privacy & Security to **Hammerspoon** (for `Ctrl+Escape`) and
+**Ghostty** (for `Ctrl+T`), `chsh -s $(which zsh)` if zsh isn't your login
+shell, and `p10k configure` if you want a prompt other than the committed
+`~/.p10k.zsh`.
 
 [MesloLGS Nerd Font]: https://github.com/ryanoasis/nerd-fonts/releases/latest

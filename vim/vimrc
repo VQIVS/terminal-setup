@@ -1,0 +1,53 @@
+" ─── ~/.vimrc ────────────────────────────────────────────────────────────────
+" Theme matches Ghostty (theme = Catppuccin Mocha) so vim blends into the
+" drop-down terminal instead of fighting it.
+
+set nocompatible
+
+" ─── colours ─────────────────────────────────────────────────────────────────
+" 24-bit colour. Ghostty reports itself as xterm-ghostty / supports truecolor,
+" but $TERM alone doesn't always set t_8f/t_8b, so set them explicitly.
+if has('termguicolors')
+  let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
+  let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
+  set termguicolors
+endif
+
+syntax enable
+set background=dark
+
+" Other flavours live in ~/.vim/colors:
+"   catppuccin_mocha  catppuccin_macchiato  catppuccin_frappe  catppuccin_latte
+" Swap the name below (latte is the light one -- also set background=light).
+silent! colorscheme catppuccin_mocha
+
+" Let the terminal's own background show through (keeps Ghostty's
+" background-opacity = 0.7 / blur visible behind vim).
+highlight Normal     guibg=NONE ctermbg=NONE
+highlight NonText    guibg=NONE ctermbg=NONE
+highlight LineNr     guibg=NONE ctermbg=NONE
+highlight SignColumn guibg=NONE ctermbg=NONE
+highlight EndOfBuffer guibg=NONE ctermbg=NONE
+
+" ─── sane defaults ───────────────────────────────────────────────────────────
+set number relativenumber
+set cursorline
+set showcmd ruler laststatus=2
+set incsearch hlsearch ignorecase smartcase
+set expandtab tabstop=4 shiftwidth=4 softtabstop=4 autoindent smartindent
+set mouse=a
+set clipboard=unnamed
+set scrolloff=4
+set splitbelow splitright
+set nobackup nowritebackup
+set undofile undodir=~/.vim/undo
+set updatetime=300
+set wildmenu
+filetype plugin indent on
+
+if !isdirectory(expand('~/.vim/undo'))
+  call mkdir(expand('~/.vim/undo'), 'p', 0700)
+endif
+
+" clear search highlight
+nnoremap <silent> <Esc> :nohlsearch<CR>
