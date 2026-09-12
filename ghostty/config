@@ -1,0 +1,51 @@
+# ─── Ghostty: Yakuake-style drop-down terminal ────────────────────────────────
+# The quick terminal is a floating panel, so unlike WezTerm it can be drawn
+# over a native-full-screen app (VS Code) without switching Space or touching
+# that app's full-screen state.
+
+# ─── quick terminal ──────────────────────────────────────────────────────────
+# `global:` registers the hotkey system-wide (macOS will ask for Accessibility
+# permission the first time -- grant it or the hotkey only works in Ghostty).
+keybind = global:ctrl+t=toggle_quick_terminal
+
+quick-terminal-position = top
+# Stay on the desktop it was opened on instead of following Space changes.
+quick-terminal-space-behavior = remain
+# Slide away as soon as focus leaves it.
+quick-terminal-autohide = true
+quick-terminal-animation-duration = 0.12
+# Which display it drops onto: main | mouse | macos-menu-bar
+quick-terminal-screen = mouse
+
+# ─── font ────────────────────────────────────────────────────────────────────
+font-family = MesloLGS Nerd Font Mono
+font-size = 14
+
+# ─── theme / background ──────────────────────────────────────────────────────
+theme = Catppuccin Mocha
+background-opacity = 0.7
+# Frosted glass behind the transparency, so text stays readable over VS Code.
+background-blur = true
+
+# ─── window ──────────────────────────────────────────────────────────────────
+window-padding-x = 12
+window-padding-y = 9
+confirm-close-surface = false
+macos-titlebar-style = tabs
+scrollback-limit = 10000000
+
+# ─── cursor ──────────────────────────────────────────────────────────────────
+cursor-style = bar
+cursor-style-blink = true
+
+# ─── backdrop ────────────────────────────────────────────────────────────────
+# Ghostty takes a single static `background-image`, so the WezTerm behaviour
+# (random dark frame per launch, CMD+SHIFT+B to cycle) is done out-of-band:
+# backdrop.sh writes the three image lines into backdrop.conf, which is
+# included here. `?` makes the include optional, so a fresh checkout with no
+# backdrop chosen yet still loads.
+#
+#   ~/.config/ghostty/backdrop.sh next     # then CMD+SHIFT+, to reload
+#
+# Paths in `config-file` are relative to this file.
+config-file = ?backdrop.conf

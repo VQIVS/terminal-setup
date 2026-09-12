@@ -1,16 +1,19 @@
-# wezterm + hammerspoon
+# wezterm + hammerspoon + ghostty
 
-My macOS terminal setup: a [WezTerm](https://wezterm.org) config and the
+My macOS terminal setup: a [WezTerm](https://wezterm.org) config, the
 [Hammerspoon](https://www.hammerspoon.org) script that gives it a global
-show/hide hotkey.
+show/hide hotkey, and a [Ghostty](https://ghostty.org) config for the one
+thing that pair provably cannot do (see [Ghostty](#ghostty)).
 
-The two halves are separate programs but they solve one problem together —
-a terminal that is always one keypress away, always on the display I'm
-looking at, and always full-screen there.
+The parts are separate programs but they solve one problem together — a
+terminal that is always one keypress away, always on the display I'm looking
+at, and always full-screen there.
 
 ```
 wezterm/wezterm.lua     -> ~/.config/wezterm/wezterm.lua
 hammerspoon/init.lua    -> ~/.hammerspoon/init.lua
+ghostty/config          -> ~/.config/ghostty/config
+ghostty/backdrop.sh     -> ~/.config/ghostty/backdrop.sh
 ```
 
 ## WezTerm
@@ -105,6 +108,64 @@ instance.
 
 [wezterm#1751]: https://github.com/wez/wezterm/issues/1751
 
+## Ghostty
+
+**Why a second terminal.** Hammerspoon can show WezTerm over anything *except*
+a natively full-screened app. macOS gives such a window its own exclusive
+Space, and only windows the owning app created as floating panels
+(`NSPanel` + `canJoinAllSpaces`) may be drawn into one. Hammerspoon drives
+other apps through the Accessibility API, which has no window-level or
+collection-behaviour setter, so the flag cannot be retrofitted:
+`hs.spaces.moveWindowToSpace(weztermWin, fullscreenSpace, true)` returns
+`true` and `hs.spaces.windowSpaces()` then shows the window still on its old
+Space. The API says as much — *"even then it works for floating windows
+only."*
+
+So the choice is: switch Space, un-full-screen the app underneath, or use a
+terminal that makes the panel itself. Ghostty's **quick terminal** is that
+panel — Yakuake/ddterm behaviour, drawn over a full-screen VS Code without
+moving it or leaving the Space ([fixed in Ghostty 1.1][gt-3719]).
+
+**Hotkey.** `Ctrl+T`, as `keybind = global:ctrl+t=toggle_quick_terminal`. The
+`global:` prefix is what makes it fire while another app is frontmost, and it
+needs Accessibility permission. It also means `Ctrl+T` is swallowed
+system-wide, including inside terminals — worth knowing if you use fzf's
+`Ctrl+T` widget or readline's transpose-chars.
+
+`quick-terminal-space-behavior = remain` pins it to the desktop it opened on,
+`quick-terminal-screen = mouse` drops it onto the display holding the pointer
+(same rule Hammerspoon uses), and `autohide` dismisses it the moment focus
+leaves.
+
+**Look.** Matched to the WezTerm side: MesloLGS Nerd Font Mono 14, Catppuccin
+Mocha, 70% opacity, plus `background-blur` since this panel sits over live
+application pixels rather than a desktop.
+
+**Backdrops.** Ghostty takes a single static `background-image` and has no
+scripting hook, so the rotation WezTerm does in Lua lives in `backdrop.sh`
+instead. It writes the `background-image*` lines into a generated
+`backdrop.conf`, which `config` pulls in via `config-file = ?backdrop.conf`
+(the `?` keeps a fresh checkout with no wallpapers from erroring).
+
+```sh
+~/.config/ghostty/backdrop.sh next     # or prev | random | <filename>
+```
+
+Ghostty re-reads config on `CMD+SHIFT+,`; `--reload` presses that for you via
+System Events if you'd rather not.
+
+The script reads the *same* `~/.config/wezterm/backdrops/` folder and the same
+11-name dark-frames list, so both terminals draw from one set of wallpapers.
+With no layer stack to work with, the WezTerm recipe (image dimmed to
+`brightness = 0.10`, then a `#11111b` scrim at 55% over it) collapses into a
+single `background-image-opacity = 0.18` blend against the theme background —
+same end state: dark enough that a bright patch of wallpaper can't eat the
+foreground. `background-image-fit = cover` rather than `contain`, because a
+letterboxed image would show bare background colour down the sides of a
+full-width drop-down.
+
+[gt-3719]: https://github.com/ghostty-org/ghostty/discussions/3719
+
 ## Install
 
 ```sh
@@ -113,9 +174,16 @@ cd wezterm-hammerspoon
 ./install.sh
 ```
 
-`install.sh` symlinks both configs into place, backing up anything already
-there, and copies [MesloLGS Nerd Font] from `fonts/` into `~/Library/Fonts/`.
-Then grant Hammerspoon Accessibility permission in System Settings → Privacy &
-Security.
+`install.sh` symlinks all the configs into place, backing up anything already
+there, copies [MesloLGS Nerd Font] from `fonts/` into `~/Library/Fonts/`, and
+seeds a Ghostty backdrop. Then grant Accessibility permission in System
+Settings → Privacy & Security to **Hammerspoon** (for `Ctrl+Escape`) and to
+**Ghostty** (for `Ctrl+T`).
+
+WezTerm and Ghostty are not installed by the script:
+
+```sh
+brew install --cask wezterm ghostty
+```
 
 [MesloLGS Nerd Font]: https://github.com/ryanoasis/nerd-fonts/releases/latest
