@@ -7,7 +7,7 @@ export KEYTIMEOUT=1          # 10ms Esc delay instead of the 0.4s default
 
 # ─── cursor shape follows the mode ───────────────────────────────────────────
 # Beam in insert, block in normal -- so you can always see which mode you're
-# in. Ghostty/WezTerm both honour DECSCUSR.
+# in. Ghostty honours DECSCUSR.
 _vi_cursor() {
    case ${KEYMAP:-viins} in
       vicmd)            printf '\e[2 q' ;;   # steady block

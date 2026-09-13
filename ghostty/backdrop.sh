@@ -1,20 +1,19 @@
 #!/usr/bin/env bash
 # Pick a backdrop for Ghostty and write it into ~/.config/ghostty/backdrop.conf.
 #
-# Ghostty reads its config once at launch and has no scripting hook, so the
-# rotation WezTerm does in Lua lives here instead: this writes the include file
-# and Ghostty picks it up on its next config reload (CMD+SHIFT+,).
+# Ghostty reads its config once at launch and has no scripting hook, so
+# wallpaper rotation lives here instead: this writes the include file and
+# Ghostty picks it up on its next config reload (CMD+SHIFT+,).
 set -euo pipefail
 
-# Shared with WezTerm rather than duplicated -- same wallpapers, same folder.
-BACKDROP_DIR="${GHOSTTY_BACKDROP_DIR:-$HOME/.config/wezterm/backdrops}"
+BACKDROP_DIR="${GHOSTTY_BACKDROP_DIR:-$HOME/.config/ghostty/backdrops}"
 CONF_DIR="${GHOSTTY_CONFIG_DIR:-$HOME/.config/ghostty}"
 CONF="$CONF_DIR/backdrop.conf"
 STATE="$CONF_DIR/.backdrop-index"
 
-# Only the dark frames, same list and same reasoning as wezterm.lua: selected
-# by mean greyscale luminance with the cutoff at 0.30, where the folder splits
-# cleanly. Lighter frames wash out Catppuccin Mocha's foreground.
+# Only the dark frames: selected by mean greyscale luminance with the cutoff at
+# 0.30, where the folder splits cleanly. Lighter frames wash out Catppuccin
+# Mocha's foreground.
 BACKDROPS=(
    'astro-jelly.jpg'    # 0.10
    'totoro.jpeg'        # 0.14
@@ -29,10 +28,9 @@ BACKDROPS=(
    'nord-space.png'     # 0.29
 )
 
-# WezTerm dims the image with `hsb.brightness = 0.10` and then lays a #11111b
-# scrim at 55% over it. Ghostty has no layer stack, but blending the image
-# against the theme background at a low alpha lands in the same place: dark
-# enough that bright regions of the wallpaper can't eat the foreground.
+# Ghostty has no layer stack for a dimming scrim, so the image is blended
+# against the theme background at a low alpha instead: dark enough that bright
+# regions of the wallpaper can't eat the foreground.
 IMAGE_OPACITY="${GHOSTTY_BACKDROP_OPACITY:-0.18}"
 
 usage() {

@@ -1,7 +1,7 @@
 # ─── Ghostty: Yakuake-style drop-down terminal ────────────────────────────────
-# The quick terminal is a floating panel, so unlike WezTerm it can be drawn
-# over a native-full-screen app (VS Code) without switching Space or touching
-# that app's full-screen state.
+# The quick terminal is a floating panel, so it can be drawn over a
+# native-full-screen app (VS Code) without switching Space or touching that
+# app's full-screen state -- something a normal terminal window can't do.
 
 # ─── quick terminal ──────────────────────────────────────────────────────────
 # `global:` registers the hotkey system-wide (macOS will ask for Accessibility
@@ -23,7 +23,7 @@ font-size = 14
 
 # ─── theme / background ──────────────────────────────────────────────────────
 theme = Catppuccin Mocha
-background-opacity = 0.7
+background-opacity = 0.8
 # Frosted glass behind the transparency, so text stays readable over VS Code.
 background-blur = true
 
@@ -39,8 +39,8 @@ cursor-style = bar
 cursor-style-blink = true
 
 # ─── backdrop ────────────────────────────────────────────────────────────────
-# Ghostty takes a single static `background-image`, so the WezTerm behaviour
-# (random dark frame per launch, CMD+SHIFT+B to cycle) is done out-of-band:
+# Ghostty takes a single static `background-image`, so rotating wallpapers
+# (a random dark frame, or cycling through them) is done out-of-band:
 # backdrop.sh writes the three image lines into backdrop.conf, which is
 # included here. `?` makes the include optional, so a fresh checkout with no
 # backdrop chosen yet still loads.
@@ -51,7 +51,7 @@ cursor-style-blink = true
 config-file = ?backdrop.conf
 
 # ─── shortcut keys ───────────────────────────────────────────────────────────
-# Splits / tabs / panes, WezTerm-style but with macOS-native cmd bindings.
+# Splits / tabs / panes with macOS-native cmd bindings.
 keybind = cmd+d=new_split:right
 keybind = cmd+shift+d=new_split:down
 keybind = cmd+w=close_surface

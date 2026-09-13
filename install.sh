@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Reproduce this terminal setup on a fresh macOS machine:
-# Ghostty + WezTerm + Hammerspoon, zsh (oh-my-zsh + powerlevel10k, vi mode),
+# Ghostty, zsh (oh-my-zsh + powerlevel10k, vi mode),
 # vim and neovim themed to match. Idempotent -- safe to re-run.
 #
 #   ./install.sh            # everything
@@ -48,15 +48,12 @@ if [ "$with_deps" = 1 ]; then
       fi
    done
 
-   for c in "ghostty:Ghostty" "wezterm:WezTerm" "hammerspoon:Hammerspoon"; do
-      cask="${c%%:*}"; app="${c##*:}"
-      if [ -d "/Applications/$app.app" ] || brew list --cask "$cask" >/dev/null 2>&1; then
-         info "$cask already installed"
-      else
-         info "brew install --cask $cask"
-         brew install --cask "$cask" || info "could not install $cask -- install it by hand"
-      fi
-   done
+   if [ -d "/Applications/Ghostty.app" ] || brew list --cask ghostty >/dev/null 2>&1; then
+      info "ghostty already installed"
+   else
+      info "brew install --cask ghostty"
+      brew install --cask ghostty || info "could not install ghostty -- install it by hand"
+   fi
 
    # oh-my-zsh + powerlevel10k (the theme ~/.zshrc asks for)
    export ZSH="${ZSH:-$HOME/.oh-my-zsh}"
@@ -77,10 +74,8 @@ if [ "$with_deps" = 1 ]; then
    fi
 fi
 
-# ─── terminal / window manager configs ───────────────────────────────────────
-say "Terminal configs"
-link "$repo/wezterm/wezterm.lua"   "$HOME/.config/wezterm/wezterm.lua"
-link "$repo/hammerspoon/init.lua"  "$HOME/.hammerspoon/init.lua"
+# ─── terminal ────────────────────────────────────────────────────────────────
+say "Terminal (Ghostty)"
 link "$repo/ghostty/config"        "$HOME/.config/ghostty/config"
 link "$repo/ghostty/backdrop.sh"   "$HOME/.config/ghostty/backdrop.sh"
 
@@ -140,7 +135,7 @@ done
 
 # ─── backdrops ───────────────────────────────────────────────────────────────
 say "Backdrops"
-mkdir -p "$HOME/.config/wezterm/backdrops"
+mkdir -p "$HOME/.config/ghostty/backdrops"
 # Ghostty has no scripting hook, so its backdrop is a generated include file;
 # seed one now. Harmless failure on a machine with no wallpapers yet -- the
 # include is optional (`?backdrop.conf`).
@@ -153,12 +148,12 @@ cat <<'DONE'
 Done. Remaining manual steps:
 
   1. Grant Accessibility permission in System Settings -> Privacy & Security
-     to Hammerspoon (Ctrl+Escape -> WezTerm) and Ghostty (Ctrl+T -> quick
-     terminal). Global hotkeys do not work without it.
+     to Ghostty (Ctrl+T -> quick terminal). The global hotkey does not work
+     without it.
   2. `exec zsh` (or open a new terminal) to pick up the shell config.
   3. `p10k configure` if you want a different prompt than the committed one.
-  4. Drop wallpapers into ~/.config/wezterm/backdrops/ and list them in the
-     BACKDROPS table in wezterm/wezterm.lua and ghostty/backdrop.sh.
+  4. Drop wallpapers into ~/.config/ghostty/backdrops/ and list them in the
+     BACKDROPS array in ghostty/backdrop.sh.
 
 Machine-specific shell bits (work paths, tokens, one-off aliases) go in
 ~/.zshrc.local -- it is sourced last and never committed.

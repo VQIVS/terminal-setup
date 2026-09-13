@@ -127,9 +127,9 @@ ___MY_VMOPTIONS_SHELL_FILE="${HOME}/.jetbrains.vmoptions.sh"; if [ -f "${___MY_V
 [ -x "$HOME/.local/bin/cswap" ] && alias cswap="$HOME/.local/bin/cswap"
 
 # ─── dotfiles repo ───────────────────────────────────────────────────────────
-# Everything below lives in the wezterm-hammerspoon repo, so it follows this
+# Everything below lives in the terminal-setup repo, so it follows this
 # machine's checkout wherever ./install put it.
-export DOTFILES="${DOTFILES:-$HOME/Developer/wezterm-hammerspoon}"
+export DOTFILES="${DOTFILES:-$HOME/Developer/terminal-setup}"
 alias dots="cd $DOTFILES"
 alias dots-install="$DOTFILES/install.sh"
 
