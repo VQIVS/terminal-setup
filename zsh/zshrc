@@ -130,6 +130,8 @@ ___MY_VMOPTIONS_SHELL_FILE="${HOME}/.jetbrains.vmoptions.sh"; if [ -f "${___MY_V
 # Everything below lives in the terminal-setup repo, so it follows this
 # machine's checkout wherever ./install put it.
 export DOTFILES="${DOTFILES:-$HOME/Developer/terminal-setup}"
+# An inherited DOTFILES can outlive a moved or renamed checkout; fall back if it's gone.
+[ -d "$DOTFILES" ] || export DOTFILES="$HOME/Developer/terminal-setup"
 alias dots="cd $DOTFILES"
 alias dots-install="$DOTFILES/install.sh"
 
